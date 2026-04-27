@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartzon Tech | Premium Electronics</title>
+    <meta name="description" content="Discover next-generation electronics at Kartzon Tech.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">KARTZON<span>.</span></a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+                <span id="user-greeting" style="display: none; font-weight: 600; color: var(--text-secondary); text-transform: capitalize;"></span>
+                <button id="auth-btn" class="btn" style="background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); padding: 0.5rem 1.5rem; border-radius: 20px;">Login</button>
+                <div class="cart-icon" id="cart-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <span class="cart-count">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>The Future of <span>Technology</span></h1>
+                <p>Experience unparalleled performance and design with our curated selection of premium electronics.</p>
+                <a href="#products" class="btn btn-primary">Shop Now</a>
+            </div>
+            <div class="hero-image">
+                <!-- Abstract glowing sphere or tech element -->
+                <div class="glow-orb"></div>
+            </div>
+        </section>
+
+        <section id="products" class="products-section">
+            <div class="section-header">
+                <h2>Featured Products</h2>
+                <div class="filters" id="category-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="Electronics">Electronics</button>
+                    <button class="filter-btn" data-filter="Audio">Audio</button>
+                    <button class="filter-btn" data-filter="Wearables">Wearables</button>
+                    <button class="filter-btn" data-filter="Accessories">Accessories</button>
+                </div>
+            </div>
+            
+            <div class="products-grid" id="products-grid">
+                <!-- Products will be injected here via JS -->
+                <div class="loading-spinner"></div>
+            </div>
+        </section>
+        
+        <section id="ambassadors" class="ambassadors-section">
+            <div class="section-header" style="justify-content: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2.5rem; font-weight: 800;">Brand Ambassadors</h2>
+            </div>
+            <div class="ambassadors-grid">
+                <div class="ambassador-card">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop" alt="Ambassador 1">
+                    <h3>Sarah Jenkins</h3>
+                    <p>Tech Enthusiast & Creator</p>
+                </div>
+                <div class="ambassador-card">
+                    <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop" alt="Ambassador 2">
+                    <h3>Marcus Thorne</h3>
+                    <p>Professional E-Sports Athlete</p>
+                </div>
+                <div class="ambassador-card">
+                    <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500&auto=format&fit=crop" alt="Ambassador 3">
+                    <h3>Elena Rostova</h3>
+                    <p>Lifestyle Influencer</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Kartzon Tech. All rights reserved.</p>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cart-overlay"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart" id="close-cart">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items injected here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">$0.00</span>
+            </div>
+            <button class="btn btn-primary checkout-btn">Checkout</button>
+        </div>
+    </div>
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-auth">&times;</button>
+            <h2 id="auth-title">Login</h2>
+            <form id="auth-form">
+                <div class="form-group">
+                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
+                <p class="auth-switch" id="auth-switch">Need an account? <span>Register</span></p>
+                <div id="auth-message" class="form-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-content checkout-content">
+            <button class="close-modal" id="close-checkout">&times;</button>
+            <h2>Checkout</h2>
+            <div class="checkout-grid">
+                <form id="checkout-form">
+                    <h3>Shipping Address</h3>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <input type="text" id="ship-name" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="ship-address" placeholder="Address" required>
+                    </div>
+                    <div class="form-group row">
+                        <input type="text" id="ship-city" placeholder="City" required>
+                        <input type="text" id="ship-zip" placeholder="ZIP Code" required>
+                    </div>
+
+                    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Mock Payment Details</h3>
+                    <div class="form-group">
+                        <input type="text" placeholder="Card Number (0000 0000 0000 0000)" required>
+                    </div>
+                    <div class="form-group row">
+                        <input type="text" placeholder="MM/YY" required>
+                        <input type="text" placeholder="CVC" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Pay & Place Order</button>
+                    <div id="checkout-message" class="form-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
