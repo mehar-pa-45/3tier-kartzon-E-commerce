@@ -6,7 +6,7 @@ pipeline {
         GIT_BRANCH = "main"
 
         DOCKERHUB_USER = "mehardocker45" 
-        IMAGE_NAME     = "3tier-Kartzon-E-commerce"
+        IMAGE_NAME     = "kartzon-e-commerce"
         IMAGE_TAG      = "latest"   
 
         DOCKER_CREDS   = "Docker_CRED" 
