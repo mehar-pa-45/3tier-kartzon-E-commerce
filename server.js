@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/productdb';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongodb:27017/productdb';
 
 // Middleware
 app.use(cors());
