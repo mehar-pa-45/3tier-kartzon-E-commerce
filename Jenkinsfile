@@ -66,14 +66,19 @@ pipeline {
         /* =========================
            QUALITY GATE
         ========================= */
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
+       stage('Quality Gate') {
+    steps {
+        timeout(time: 5, unit: 'MINUTES') {
+            script {
+                def qg = waitForQualityGate()
+                echo "SonarQube Status: ${qg.status}"
+                if (qg.status != 'OK') {
+                    error "Pipeline failed due to Quality Gate: ${qg.status}"
+                         }
+                      }
+                  }
+               }
             }
-        }
-
         /* =========================
            BUILD DOCKER IMAGE
         ========================= */
