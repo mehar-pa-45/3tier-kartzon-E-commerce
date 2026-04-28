@@ -3,66 +3,52 @@ pipeline {
 
     environment {
 
-        /* =========================
-           GIT CONFIG
-        ========================= */
+        /* GIT */
         GIT_REPO   = "https://github.com/mehar-pa-45/3tier-kartzon-E-commerce.git"
         GIT_BRANCH = "main"
 
-        /* =========================
-           DOCKER CONFIG
-        ========================= */
+        /* DOCKER */
         DOCKERHUB_USER = "mehardocker45"
         IMAGE_NAME     = "kartzon-e-commerce"
         IMAGE_TAG      = "latest"
         DOCKER_CREDS   = "Docker_CRED"
 
-        /* =========================
-           SONARQUBE CONFIG
-        ========================= */
+        /* SONARQUBE */
         SONAR_PROJECT_KEY = "Kartzon-repo"
-        SONAR_SERVER = "Sonarscanner"   // Jenkins SonarQube name
+        SONAR_SERVER = "Sonarscanner"
 
-        /* =========================
-           NEXUS CONFIG
-        ========================= */
-        NEXUS_URL = "http://localhost:8081"
-        NEXUS_REPO = "raw-repo"
+        /* NEXUS */
+        NEXUS_URL   = "http://localhost:8081"
+        NEXUS_REPO  = "raw-repo"
         NEXUS_CREDS = "nexus-cred"
     }
 
     stages {
 
-        /* =========================
-           CHECKOUT
-        ========================= */
         stage('Checkout Code') {
             steps {
-             checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'Github-Cred', url: 'https://github.com/mehar-pa-45/3tier-kartzon-E-commerce.git']])
-            }
+                checkout scmGit(
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        credentialsId: 'Github-Cred',
+                        url: "${GIT_REPO}"
+                    ]]
+                )
             }
         }
 
-        /* =========================
-           SONARQUBE SCAN
-        ========================= */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
                     sh """
                     sonar-scanner \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN
+                    -Dsonar.sources=.
                     """
                 }
             }
         }
 
-        /* =========================
-           QUALITY GATE
-        ========================= */
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -71,18 +57,12 @@ pipeline {
             }
         }
 
-        /* =========================
-           BUILD DOCKER IMAGE
-        ========================= */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        /* =========================
-           DOCKER LOGIN
-        ========================= */
         stage('DockerHub Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -95,18 +75,12 @@ pipeline {
             }
         }
 
-        /* =========================
-           PUSH IMAGE
-        ========================= */
         stage('Push Image to DockerHub') {
             steps {
                 sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
-        /* =========================
-           UPLOAD TO NEXUS
-        ========================= */
         stage('Upload Artifact to Nexus') {
             steps {
                 withCredentials([usernamePassword(
@@ -118,7 +92,7 @@ pipeline {
                     sh """
                     zip -r app.zip .
 
-                    curl -v -u $NEXUS_USER:$NEXUS_PASS \
+                    curl -v -u \$NEXUS_USER:\$NEXUS_PASS \
                     --upload-file app.zip \
                     ${NEXUS_URL}/repository/${NEXUS_REPO}/app.zip
                     """
@@ -126,3 +100,4 @@ pipeline {
             }
         }
     }
+}
