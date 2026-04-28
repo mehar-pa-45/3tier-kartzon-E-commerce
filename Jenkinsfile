@@ -3,21 +3,29 @@ pipeline {
 
     environment {
 
-        /* GIT */
+        /* =========================
+           GIT CONFIG
+        ========================= */
         GIT_REPO   = "https://github.com/mehar-pa-45/3tier-kartzon-E-commerce.git"
         GIT_BRANCH = "main"
 
-        /* DOCKER */
+        /* =========================
+           DOCKER CONFIG
+        ========================= */
         DOCKERHUB_USER = "mehardocker45"
         IMAGE_NAME     = "kartzon-e-commerce"
         IMAGE_TAG      = "latest"
         DOCKER_CREDS   = "Docker_CRED"
 
-        /* SONARQUBE */
+        /* =========================
+           SONARQUBE CONFIG
+        ========================= */
         SONAR_PROJECT_KEY = "Kartzon-repo"
         SONAR_SERVER = "Sonarscanner"
 
-        /* NEXUS */
+        /* =========================
+           NEXUS CONFIG
+        ========================= */
         NEXUS_URL   = "http://localhost:8081"
         NEXUS_REPO  = "raw-repo"
         NEXUS_CREDS = "nexus-cred"
@@ -25,6 +33,9 @@ pipeline {
 
     stages {
 
+        /* =========================
+           CHECKOUT CODE
+        ========================= */
         stage('Checkout Code') {
             steps {
                 checkout scmGit(
@@ -37,18 +48,24 @@ pipeline {
             }
         }
 
+        /* =========================
+           SONARQUBE ANALYSIS
+        ========================= */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
-                    sh """
-                    sonar-scanner \
+                    sh '''
+                    /opt/sonar-scanner/bin/sonar-scanner \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                     -Dsonar.sources=.
-                    """
+                    '''
                 }
             }
         }
 
+        /* =========================
+           QUALITY GATE
+        ========================= */
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -57,12 +74,18 @@ pipeline {
             }
         }
 
+        /* =========================
+           BUILD DOCKER IMAGE
+        ========================= */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
+        /* =========================
+           DOCKER LOGIN
+        ========================= */
         stage('DockerHub Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -75,12 +98,18 @@ pipeline {
             }
         }
 
+        /* =========================
+           PUSH TO DOCKERHUB
+        ========================= */
         stage('Push Image to DockerHub') {
             steps {
                 sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
+        /* =========================
+           UPLOAD TO NEXUS
+        ========================= */
         stage('Upload Artifact to Nexus') {
             steps {
                 withCredentials([usernamePassword(
@@ -89,13 +118,13 @@ pipeline {
                     passwordVariable: 'NEXUS_PASS'
                 )]) {
 
-                    sh """
+                    sh '''
                     zip -r app.zip .
 
-                    curl -v -u \$NEXUS_USER:\$NEXUS_PASS \
+                    curl -v -u $NEXUS_USER:$NEXUS_PASS \
                     --upload-file app.zip \
                     ${NEXUS_URL}/repository/${NEXUS_REPO}/app.zip
-                    """
+                    '''
                 }
             }
         }
