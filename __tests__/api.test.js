@@ -3,23 +3,17 @@ const app = require("../server");
 
 describe("Product API", () => {
 
-  test("GET /api/products should return 200", async () => {
+  test("GET products", async () => {
     const res = await request(app).get("/api/products");
     expect(res.statusCode).toBe(200);
   });
 
-  test("POST /api/products should create product", async () => {
+  test("Create product validation", async () => {
     const res = await request(app)
       .post("/api/products")
-      .send({
-        name: "Test Product",
-        description: "Test Desc",
-        price: 100,
-        imageUrl: "test.jpg",
-        category: "test"
-      });
+      .send({});
 
-    expect([200,201,400]).toContain(res.statusCode);
+    expect(res.statusCode).toBe(400);
   });
 
 });
