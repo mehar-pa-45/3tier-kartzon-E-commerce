@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-
         /* =========================
            GIT CONFIG
         ========================= */
@@ -49,6 +48,18 @@ pipeline {
         }
 
         /* =========================
+           Run Tests + Coverage
+        ========================= */
+        stage('Run Tests with Coverage') {
+            steps {
+                sh '''
+                npm install
+                npm run coverage
+                '''
+            }
+        }
+
+        /* =========================
            SONARQUBE ANALYSIS
         ========================= */
         stage('SonarQube Analysis') {
@@ -57,7 +68,8 @@ pipeline {
                     sh '''
                     /opt/sonar-scanner/bin/sonar-scanner \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.sources=.
+                    -Dsonar.sources=. \
+                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
                     '''
                 }
             }
@@ -66,19 +78,20 @@ pipeline {
         /* =========================
            QUALITY GATE
         ========================= */
-       stage('Quality Gate') {
-    steps {
-        timeout(time: 5, unit: 'MINUTES') {
-            script {
-                def qg = waitForQualityGate()
-                echo "SonarQube Status: ${qg.status}"
-                if (qg.status != 'OK') {
-                    error "Pipeline failed due to Quality Gate: ${qg.status}"
-                         }
-                      }
-                  }
-               }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        echo "SonarQube Status: ${qg.status}"
+                        if (qg.status != 'OK') {
+                            error "Pipeline failed due to Quality Gate: ${qg.status}"
+                        }
+                    }
+                }
             }
+        }
+
         /* =========================
            BUILD DOCKER IMAGE
         ========================= */
@@ -122,7 +135,6 @@ pipeline {
                     usernameVariable: 'NEXUS_USER',
                     passwordVariable: 'NEXUS_PASS'
                 )]) {
-
                     sh '''
                     zip -r app.zip .
 
