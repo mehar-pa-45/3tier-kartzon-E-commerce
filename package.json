@@ -3,14 +3,11 @@
   "version": "1.0.0",
   "description": "3-tier e-commerce app",
   "main": "server.js",
-
   "scripts": {
     "start": "node server.js",
-    "seed": "node seed.js",
-    "test": "jest --passWithNoTests",
-    "coverage": "jest --coverage"
+    "test": "NODE_ENV=test jest",
+    "coverage": "NODE_ENV=test jest --coverage --detectOpenHandles"
   },
-
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -19,18 +16,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.3.4"
   },
-
   "devDependencies": {
     "jest": "^29.7.0",
     "supertest": "^7.0.0"
-  },
-
-  "jest": {
-    "testEnvironment": "node",
-    "collectCoverage": true,
-    "coverageDirectory": "coverage",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ]
   }
 }
