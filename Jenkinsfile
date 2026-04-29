@@ -63,13 +63,8 @@ pipeline {
 stage('SonarQube Analysis') {
     steps {
         withSonarQubeEnv('Sonarscanner') {
-            sh '''
-            sonar-scanner \
-            -Dsonar.projectKey=Kartzon-repo \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.login=$SONAR_AUTH_TOKEN
-            '''
+            def scannerHome = tool 'SonarScanner'
+            sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Kartzon-repo -Dsonar.sources=."
         }
     }
 }
