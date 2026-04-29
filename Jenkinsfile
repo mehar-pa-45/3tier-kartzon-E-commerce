@@ -64,10 +64,16 @@ pipeline {
         /* =========================
            SONARQUBE ANALYSIS (FIXED)
         ========================= */
-       stage('SonarQube Analysis') {
+      stage('SonarQube Analysis') {
     steps {
         withSonarQubeEnv('Sonarscanner') {
-            sh 'sonar-scanner -Dsonar.projectKey=Kartzon-repo -Dsonar.sources=.'
+            def scannerHome = tool 'SonarScanner'
+            sh """
+            ${scannerHome}/bin/sonar-scanner \
+            -Dsonar.projectKey=Kartzon-repo \
+            -Dsonar.sources=. \
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            """
         }
     }
 }
