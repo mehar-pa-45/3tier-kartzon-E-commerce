@@ -33,9 +33,6 @@ pipeline {
 
     stages {
 
-        /* =========================
-           CHECKOUT CODE
-        ========================= */
         stage('Checkout Code') {
             steps {
                 checkout scmGit(
@@ -48,74 +45,59 @@ pipeline {
             }
         }
 
-        /* =========================
-           INSTALL DEPENDENCIES
-        ========================= */
         stage('Install Dependencies') {
             steps {
-                sh '''
-                npm install
-                '''
+                sh 'npm install'
             }
         }
 
-        /* =========================
-           RUN TESTS (NO COVERAGE BLOCK)
-        ========================= */
         stage('Run Tests') {
             steps {
-                sh '''
-                npm test || true
-                '''
+                sh 'npm test || true'
             }
         }
 
         /* =========================
-           SONARQUBE ANALYSIS
+           SONARQUBE ANALYSIS (FIXED)
         ========================= */
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONAR_SERVER}") {
-                    sh '''
+                    sh """
                     /opt/sonar-scanner/bin/sonar-scanner \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.sources=.
-                    '''
+                    -Dsonar.sources=. \
+                    -Dsonar.qualitygate.wait=true
+                    """
                 }
             }
         }
 
         /* =========================
-           QUALITY GATE (NON-BLOCKING)
+           QUALITY GATE (STRICT)
         ========================= */
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
                     script {
                         def qg = waitForQualityGate()
-                        echo "SonarQube Status: ${qg.status}"
 
-                        // ✅ PIPELINE WILL NOT FAIL
+                        echo "Quality Gate Status: ${qg.status}"
+
                         if (qg.status != 'OK') {
-                            echo "Quality Gate failed — continuing pipeline"
+                            error("❌ Pipeline stopped due to Quality Gate failure")
                         }
                     }
                 }
             }
         }
 
-        /* =========================
-           BUILD DOCKER IMAGE
-        ========================= */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
-        /* =========================
-           DOCKER LOGIN
-        ========================= */
         stage('DockerHub Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -123,25 +105,17 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    '''
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
-        /* =========================
-           PUSH IMAGE
-        ========================= */
         stage('Push Image to DockerHub') {
             steps {
                 sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
-        /* =========================
-           UPLOAD TO NEXUS
-        ========================= */
         stage('Upload Artifact to Nexus') {
             steps {
                 withCredentials([usernamePassword(
