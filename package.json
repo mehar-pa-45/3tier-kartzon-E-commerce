@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "NODE_ENV=test jest",
-    "coverage": "NODE_ENV=test jest --coverage --detectOpenHandles"
+    "test": "jest --coverage --detectOpenHandles",
+    "coverage": "jest --coverage --detectOpenHandles"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
