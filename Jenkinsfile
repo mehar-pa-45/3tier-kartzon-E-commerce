@@ -64,22 +64,25 @@ pipeline {
         /* =========================
            SONARQUBE ANALYSIS (FIXED)
         ========================= */
-      stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('Sonarscanner') {
-            def scannerHome = tool 'SonarScanner'
-            sh """
-            ${scannerHome}/bin/sonar-scanner \
-            -Dsonar.projectKey=Kartzon-repo \
-            -Dsonar.sources=. \
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            """
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONAR_SERVER}") {
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=$SONAR_HOST_URL \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN
+                        """
+                    }
+                }
+            }
         }
-    }
-}
 
         /* =========================
-           QUALITY GATE (STRICT)
+           QUALITY GATE
         ========================= */
         stage('Quality Gate') {
             steps {
@@ -89,7 +92,7 @@ pipeline {
                         echo "Quality Gate Status: ${qg.status}"
 
                         if (qg.status != 'OK') {
-                            error("❌ Pipeline stopped due to Quality Gate failure")
+                            error("❌ Pipeline failed due to Quality Gate")
                         }
                     }
                 }
@@ -115,9 +118,7 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    '''
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
