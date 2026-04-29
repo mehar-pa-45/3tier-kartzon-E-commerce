@@ -65,22 +65,20 @@ pipeline {
            SONARQUBE ANALYSIS (FIXED)
         ========================= */
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv("${SONAR_SERVER}") {
-                    script {
-                        def scannerHome = tool 'SonarScanner'
-                        sh """
-                        ${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                        """
-                    }
-                }
+    steps {
+        withSonarQubeEnv("${SONAR_SERVER}") {
+            script {
+                def scannerHome = tool 'SonarScanner'
+                sh """
+                ${scannerHome}/bin/sonar-scanner \
+                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                -Dsonar.sources=. \
+                -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                """
             }
         }
-
+    }
+}
         /* =========================
            QUALITY GATE
         ========================= */
