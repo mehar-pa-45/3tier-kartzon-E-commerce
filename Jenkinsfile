@@ -64,19 +64,13 @@ pipeline {
         /* =========================
            SONARQUBE ANALYSIS (FIXED)
         ========================= */
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv("${SONAR_SERVER}") {
-                    sh '''
-                    sonar-scanner \
-                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.sources=. \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN
-                    '''
-                }
-            }
+       stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('Sonarscanner') {
+            sh 'sonar-scanner -Dsonar.projectKey=Kartzon-repo -Dsonar.sources=.'
         }
+    }
+}
 
         /* =========================
            QUALITY GATE (STRICT)
