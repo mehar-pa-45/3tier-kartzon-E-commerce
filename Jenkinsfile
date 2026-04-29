@@ -26,31 +26,35 @@ pipeline {
         /* =========================
            NEXUS CONFIG
         ========================= */
-        NEXUS_URL   = "http://localhost:8081"
+        NEXUS_URL   = "http://13.202.138.3:8081"
         NEXUS_REPO  = "raw-repo"
         NEXUS_CREDS = "nexus-cred"
     }
 
     stages {
 
+        /* =========================
+           CHECKOUT CODE
+        ========================= */
         stage('Checkout Code') {
             steps {
-                checkout scmGit(
-                    branches: [[name: "*/${GIT_BRANCH}"]],
-                    userRemoteConfigs: [[
-                        credentialsId: 'Github-Cred',
-                        url: "${GIT_REPO}"
-                    ]]
-                )
+                git branch: "${GIT_BRANCH}",
+                    url: "${GIT_REPO}"
             }
         }
 
+        /* =========================
+           INSTALL DEPENDENCIES
+        ========================= */
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
+        /* =========================
+           RUN TESTS
+        ========================= */
         stage('Run Tests') {
             steps {
                 sh 'npm test || true'
@@ -60,24 +64,28 @@ pipeline {
         /* =========================
            SONARQUBE ANALYSIS (FIXED)
         ========================= */
-stage('SonarQube Analysis') {
-    steps {
-        withSonarQubeEnv('Sonarscanner') {
-            def scannerHome = tool 'SonarScanner'
-            sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Kartzon-repo -Dsonar.sources=."
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONAR_SERVER}") {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=$SONAR_HOST_URL \
+                    -Dsonar.login=$SONAR_AUTH_TOKEN
+                    '''
+                }
+            }
         }
-    }
-}
 
         /* =========================
            QUALITY GATE (STRICT)
         ========================= */
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    script {
+                script {
+                    timeout(time: 5, unit: 'MINUTES') {
                         def qg = waitForQualityGate()
-
                         echo "Quality Gate Status: ${qg.status}"
 
                         if (qg.status != 'OK') {
@@ -88,12 +96,18 @@ stage('SonarQube Analysis') {
             }
         }
 
+        /* =========================
+           BUILD DOCKER IMAGE
+        ========================= */
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
+        /* =========================
+           DOCKER LOGIN
+        ========================= */
         stage('DockerHub Login') {
             steps {
                 withCredentials([usernamePassword(
@@ -101,17 +115,25 @@ stage('SonarQube Analysis') {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
                 }
             }
         }
 
+        /* =========================
+           PUSH IMAGE
+        ========================= */
         stage('Push Image to DockerHub') {
             steps {
                 sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
+        /* =========================
+           NEXUS UPLOAD
+        ========================= */
         stage('Upload Artifact to Nexus') {
             steps {
                 withCredentials([usernamePassword(
